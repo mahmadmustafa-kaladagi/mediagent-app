@@ -80,7 +80,7 @@ const doctors = [
     slots:{today:["10:30 AM","01:00 PM","04:00 PM"],tomorrow:["09:00 AM","11:30 AM","03:30 PM"],dayafter:["10:00 AM","01:30 PM","05:00 PM"]}
   },
   {
-    id:"doc002",name:"Dr. Shivani Rajput",specialty:"Cardiologist",
+    id:"doc009",name:"Dr. Shivani Rajput",specialty:"Cardiologist",
     specialties:["chest pain","heart","palpitation","breathlessness","blood pressure","hypertension","cardiac","shortness of breath","dizziness","fainting"],
     qualification:"MBBS, MD, DM (Cardiology)",experience:7,rating:4.1,reviews:203,fee:1100,
     image:"👩‍⚕️",initials:"AM",color:"#ef4444",
