@@ -1,0 +1,2565 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>MediAgent — AI Health Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap"
+    rel="stylesheet" />
+  <style>
+    /* ════════════════════════════════════════════════════════
+   DESIGN SYSTEM — Clinical Noir × Biopunk
+   ════════════════════════════════════════════════════════ */
+    :root {
+      --ink: #08090d;
+      --ink2: #0f1117;
+      --ink3: #161920;
+      --panel: #12141a;
+      --glass: rgba(255, 255, 255, 0.03);
+      --glass2: rgba(255, 255, 255, 0.06);
+      --rim: rgba(255, 255, 255, 0.07);
+      --rim2: rgba(255, 255, 255, 0.12);
+      --rim3: rgba(255, 255, 255, 0.18);
+      --text: #eef0f6;
+      --text2: #8b90a0;
+      --text3: #4a4f5e;
+      --vivid: #00ff88;
+      --vivid2: #00cc6a;
+      --vivid3: rgba(0, 255, 136, 0.08);
+      --vivid4: rgba(0, 255, 136, 0.15);
+      --blue: #4f8fff;
+      --amber: #ffb347;
+      --red: #ff4f4f;
+      --purple: #a78bfa;
+      --r: 14px;
+      --r2: 20px;
+      --r3: 28px;
+      --glow: 0 0 60px rgba(0, 255, 136, 0.12);
+      --glow2: 0 0 30px rgba(0, 255, 136, 0.2);
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      font-size: 16px;
+      height: 100%
+    }
+
+    body {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      background: var(--ink);
+      color: var(--text);
+      height: 100%;
+      overflow: hidden;
+      cursor: default
+    }
+
+    ::selection {
+      background: rgba(0, 255, 136, 0.2);
+      color: var(--vivid)
+    }
+
+    ::-webkit-scrollbar {
+      width: 3px;
+      height: 3px
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--rim2);
+      border-radius: 99px
+    }
+
+    /* ── ROOT LAYOUT ─────────────────────────────── */
+    .app {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      position: relative
+    }
+
+    /* ── LEFT RAIL — Conversation & Nav ─────────── */
+    .left-rail {
+      width: 380px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--ink2);
+      border-right: 1px solid var(--rim);
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Logo */
+    .logo-bar {
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid var(--rim);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .logo-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--vivid), #00aaff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+    }
+
+    .logo-text {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.02em
+    }
+
+    .logo-text em {
+      font-style: normal;
+      color: var(--vivid)
+    }
+
+    .status-dot {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--vivid);
+      background: var(--vivid3);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      padding: 4px 10px;
+      border-radius: 99px;
+    }
+
+    .status-dot::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--vivid);
+      border-radius: 50%;
+      animation: pulse-dot 2s ease infinite
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.4)
+      }
+
+      50% {
+        opacity: 0.7;
+        box-shadow: 0 0 0 6px rgba(0, 255, 136, 0)
+      }
+    }
+
+    /* Nav tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 2px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--rim);
+      flex-shrink: 0
+    }
+
+    .nav-tab {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: var(--text3);
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .nav-tab .tab-icon {
+      font-size: 15px
+    }
+
+    .nav-tab:hover {
+      background: var(--glass2);
+      color: var(--text2)
+    }
+
+    .nav-tab.active {
+      background: var(--vivid3);
+      color: var(--vivid);
+      border: 1px solid rgba(0, 255, 136, 0.15)
+    }
+
+    /* Conversation area */
+    .convo-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px
+    }
+
+    /* Messages */
+    .msg {
+      max-width: 100%;
+      animation: msgIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both
+    }
+
+    @keyframes msgIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.96)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1)
+      }
+    }
+
+    .msg-agent {
+      align-self: flex-start
+    }
+
+    .msg-user {
+      align-self: flex-end
+    }
+
+    .msg-bubble {
+      padding: 12px 16px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 290px;
+    }
+
+    .msg-agent .msg-bubble {
+      background: var(--ink3);
+      border: 1px solid var(--rim);
+      color: var(--text);
+      border-radius: 4px 18px 18px 18px;
+    }
+
+    .msg-user .msg-bubble {
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 204, 106, 0.1));
+      border: 1px solid rgba(0, 255, 136, 0.25);
+      color: var(--text);
+      border-radius: 18px 18px 4px 18px;
+    }
+
+    .msg-agent-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+    }
+
+    .agent-avatar-sm {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--vivid), #00aaff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+    }
+
+    /* Typing indicator */
+    .typing-bubble {
+      background: var(--ink3);
+      border: 1px solid var(--rim);
+      border-radius: 4px 18px 18px 18px;
+      padding: 12px 16px;
+      display: inline-flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--text3);
+      border-radius: 50%;
+      animation: typing 1.2s ease infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s
+    }
+
+    @keyframes typing {
+
+      0%,
+      60%,
+      100% {
+        transform: translateY(0)
+      }
+
+      30% {
+        transform: translateY(-6px)
+      }
+    }
+
+    /* Input bar */
+    .input-bar {
+      padding: 12px 16px;
+      border-top: 1px solid var(--rim);
+      flex-shrink: 0;
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .chat-textarea {
+      flex: 1;
+      background: var(--ink3);
+      border: 1px solid var(--rim2);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 14px;
+      resize: none;
+      outline: none;
+      max-height: 100px;
+      min-height: 40px;
+      transition: border-color 0.2s;
+      field-sizing: content;
+    }
+
+    .chat-textarea:focus {
+      border-color: rgba(0, 255, 136, 0.35)
+    }
+
+    .chat-textarea::placeholder {
+      color: var(--text3)
+    }
+
+    .send-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--vivid), var(--vivid2));
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      color: #08090d;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      box-shadow: var(--glow2);
+    }
+
+    .send-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 40px rgba(0, 255, 136, 0.4)
+    }
+
+    .send-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none
+    }
+
+    /* Symptom chips */
+    .chips-row {
+      padding: 8px 16px;
+      border-top: 1px solid var(--rim);
+      flex-shrink: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px
+    }
+
+    .chip {
+      font-size: 11px;
+      padding: 5px 11px;
+      border-radius: 99px;
+      border: 1px solid var(--rim2);
+      background: var(--glass);
+      color: var(--text2);
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: 'IBM Plex Mono', monospace;
+      white-space: nowrap;
+    }
+
+    .chip:hover {
+      border-color: rgba(0, 255, 136, 0.35);
+      color: var(--vivid);
+      background: var(--vivid3)
+    }
+
+    /* ── RIGHT PANEL — Workspace ──────────────────── */
+    .workspace {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: var(--ink);
+      position: relative;
+    }
+
+    /* Animated grid background */
+    .workspace::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(var(--rim) 1px, transparent 1px),
+        linear-gradient(90deg, var(--rim) 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: 0.4;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+    }
+
+    /* Workspace header */
+    .ws-header {
+      padding: 18px 28px;
+      border-bottom: 1px solid var(--rim);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(8, 9, 13, 0.8);
+      backdrop-filter: blur(20px);
+      position: relative;
+      z-index: 1;
+    }
+
+    .ws-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.05em;
+      text-transform: uppercase
+    }
+
+    .ws-actions {
+      display: flex;
+      gap: 8px
+    }
+
+    .ws-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--rim2);
+      background: transparent;
+      color: var(--text2);
+      font-size: 12px;
+      font-family: 'Bricolage Grotesque', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .ws-btn:hover {
+      border-color: var(--rim3);
+      color: var(--text)
+    }
+
+    .ws-btn.primary {
+      background: var(--vivid3);
+      border-color: rgba(0, 255, 136, 0.3);
+      color: var(--vivid)
+    }
+
+    .ws-btn.primary:hover {
+      background: var(--vivid4)
+    }
+
+    /* Workspace body */
+    .ws-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px;
+      position: relative;
+      z-index: 1
+    }
+
+    /* ── SCREENS ──────────────────────────────────── */
+    .screen {
+      display: none
+    }
+
+    .screen.active {
+      display: block;
+      animation: screenIn 0.5s cubic-bezier(0.23, 1, 0.32, 1) both
+    }
+
+    @keyframes screenIn {
+      from {
+        opacity: 0;
+        transform: translateY(16px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    /* ── HERO SCREEN ──────────────────────────────── */
+    .hero-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 120px);
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .hero-orbs {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px)
+    }
+
+    .orb1 {
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(0, 255, 136, 0.08), transparent);
+      top: -200px;
+      right: -100px;
+      animation: orbFloat 12s ease-in-out infinite
+    }
+
+    .orb2 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(79, 143, 255, 0.06), transparent);
+      bottom: -150px;
+      left: -100px;
+      animation: orbFloat 16s ease-in-out infinite reverse
+    }
+
+    @keyframes orbFloat {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1)
+      }
+
+      50% {
+        transform: translateY(-40px) scale(1.05)
+      }
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--vivid);
+      background: var(--vivid3);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      padding: 6px 16px;
+      border-radius: 99px;
+      margin-bottom: 28px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .hero-title {
+      font-size: clamp(36px, 4vw, 60px);
+      font-weight: 800;
+      line-height: 1.05;
+      margin-bottom: 16px;
+      letter-spacing: -0.03em;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .hero-title .serif {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      color: var(--vivid)
+    }
+
+    .hero-sub {
+      font-size: 16px;
+      color: var(--text2);
+      line-height: 1.7;
+      max-width: 480px;
+      animation: fadeUp 0.6s 0.2s ease both;
+      margin-bottom: 40px;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: flex;
+      gap: 2px;
+      background: var(--rim);
+      border-radius: 16px;
+      overflow: hidden;
+      animation: fadeUp 0.6s 0.3s ease both;
+      border: 1px solid var(--rim);
+    }
+
+    .stat-block {
+      flex: 1;
+      padding: 16px 20px;
+      background: var(--ink2);
+      text-align: center;
+    }
+
+    .stat-block:not(:last-child) {
+      border-right: 1px solid var(--rim)
+    }
+
+    .stat-num {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--vivid)
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--text3);
+      font-family: 'IBM Plex Mono', monospace;
+      margin-top: 2px
+    }
+
+    /* Arrow hint */
+    .arrow-hint {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 32px;
+      color: var(--text3);
+      font-size: 13px;
+      animation: fadeUp 0.6s 0.5s ease both;
+    }
+
+    .arrow-hint::before,
+    .arrow-hint::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--rim2)
+    }
+
+    /* ── AGENT THINKING SCREEN ───────────────────── */
+    .thinking-screen {
+      padding: 8px 0
+    }
+
+    .thinking-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 20px;
+      background: var(--ink2);
+      border: 1px solid var(--rim);
+      border-radius: var(--r2);
+      margin-bottom: 20px;
+    }
+
+    .agent-avatar-lg {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--vivid), #00aaff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: var(--glow2);
+    }
+
+    .thinking-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--vivid);
+      margin-bottom: 4px
+    }
+
+    .thinking-q {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4
+    }
+
+    /* Steps */
+    .steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px
+    }
+
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 18px;
+      border-radius: var(--r);
+      border: 1px solid var(--rim);
+      background: var(--ink2);
+      opacity: 0;
+      transform: translateX(-16px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .step-item.visible {
+      opacity: 1;
+      transform: translateX(0)
+    }
+
+    .step-item.done {
+      border-color: rgba(0, 255, 136, 0.2);
+      background: rgba(0, 255, 136, 0.04)
+    }
+
+    .step-item.running {
+      border-color: rgba(79, 143, 255, 0.3);
+      background: rgba(79, 143, 255, 0.04)
+    }
+
+    .step-item.error {
+      border-color: rgba(255, 79, 79, 0.2);
+      background: rgba(255, 79, 79, 0.04)
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      border: 1px solid var(--rim2);
+      background: var(--glass);
+      color: var(--text3);
+      transition: all 0.3s;
+    }
+
+    .step-item.done .step-num {
+      background: rgba(0, 255, 136, 0.15);
+      border-color: rgba(0, 255, 136, 0.3);
+      color: var(--vivid)
+    }
+
+    .step-item.running .step-num {
+      background: rgba(79, 143, 255, 0.15);
+      border-color: rgba(79, 143, 255, 0.3);
+      color: var(--blue)
+    }
+
+    .step-body {
+      flex: 1
+    }
+
+    .step-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 3px;
+      color: var(--text)
+    }
+
+    .step-detail {
+      font-size: 12px;
+      color: var(--text3);
+      font-family: 'IBM Plex Mono', monospace;
+      line-height: 1.5
+    }
+
+    .step-item.done .step-detail {
+      color: var(--vivid2)
+    }
+
+    .step-status {
+      font-size: 16px;
+      margin-left: auto;
+      flex-shrink: 0
+    }
+
+    .spinner {
+      animation: spin 0.8s linear infinite;
+      display: inline-block
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    /* Urgency indicator */
+    .urgency-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: var(--r);
+      margin-top: 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid;
+    }
+
+    .urgency-HIGH {
+      background: rgba(255, 79, 79, 0.08);
+      border-color: rgba(255, 79, 79, 0.3);
+      color: var(--red)
+    }
+
+    .urgency-MEDIUM {
+      background: rgba(255, 179, 71, 0.08);
+      border-color: rgba(255, 179, 71, 0.3);
+      color: var(--amber)
+    }
+
+    .urgency-LOW {
+      background: rgba(0, 255, 136, 0.06);
+      border-color: rgba(0, 255, 136, 0.2);
+      color: var(--vivid)
+    }
+
+    /* ── DOCTORS SCREEN ──────────────────────────── */
+    .analysis-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--ink2);
+      border: 1px solid var(--rim);
+      border-radius: 99px;
+      padding: 8px 18px;
+      margin-bottom: 20px;
+      font-size: 12px;
+      color: var(--text2);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .conf-val {
+      color: var(--vivid);
+      font-weight: 500
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text3);
+      font-family: 'IBM Plex Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 14px
+    }
+
+    .doctors-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px
+    }
+
+    .doc-card {
+      background: var(--ink2);
+      border: 1px solid var(--rim);
+      border-radius: var(--r2);
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .doc-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--c, var(--vivid));
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    .doc-card:hover {
+      border-color: var(--rim2);
+      transform: translateX(4px)
+    }
+
+    .doc-card:hover::before {
+      opacity: 1
+    }
+
+    .doc-card-top {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      margin-bottom: 14px
+    }
+
+    .doc-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      border: 1px solid var(--rim2);
+      background: var(--ink3);
+    }
+
+    .doc-meta {
+      flex: 1;
+      min-width: 0
+    }
+
+    .doc-name {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 3px;
+      letter-spacing: -0.01em
+    }
+
+    .doc-spec {
+      font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace;
+      padding: 2px 8px;
+      border-radius: 99px;
+      display: inline-block;
+      margin-bottom: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text2);
+    }
+
+    .doc-qual {
+      font-size: 12px;
+      color: var(--text3)
+    }
+
+    .doc-rating {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .rating-num {
+      font-size: 15px;
+      margin-top: 22px;
+      font-weight: 800;
+      color: var(--amber);
+      letter-spacing: -0.02em;
+    }
+
+    .rating-count {
+      font-size: 11px;
+      color: var(--text3);
+      font-family: 'IBM Plex Mono', monospace
+    }
+
+    .doc-row2 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px
+    }
+
+    .doc-chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap
+    }
+
+    .doc-chip {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: var(--glass2);
+      border: 1px solid var(--rim);
+      color: var(--text2);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .doc-fee {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--vivid);
+      letter-spacing: -0.02em
+    }
+
+    .doc-fee span {
+      font-size: 12px;
+      color: var(--text3);
+      font-weight: 400
+    }
+
+    .doc-hospital {
+      font-size: 12px;
+      color: var(--text3);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--rim);
+    }
+
+    .available-badge {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      background: var(--vivid3);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      color: var(--vivid);
+      padding: 3px 9px;
+      border-radius: 99px;
+    }
+
+    /* ── SLOTS SCREEN ─────────────────────────────── */
+    .doc-detail-hero {
+      background: var(--ink2);
+      border: 1px solid var(--rim);
+      border-radius: var(--r2);
+      padding: 24px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+    }
+
+    .doc-detail-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      background: var(--ink3);
+      border: 1px solid var(--rim2);
+    }
+
+    .doc-detail-info {
+      flex: 1
+    }
+
+    .doc-detail-name {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px
+    }
+
+    .doc-detail-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px
+    }
+
+    .dtag {
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 8px;
+      background: var(--glass2);
+      border: 1px solid var(--rim);
+      color: var(--text2);
+    }
+
+    .dtag.green {
+      background: var(--vivid3);
+      border-color: rgba(0, 255, 136, 0.2);
+      color: var(--vivid)
+    }
+
+    .doc-about {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.7;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--rim)
+    }
+
+    .slots-day-section {
+      margin-bottom: 24px
+    }
+
+    .day-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .day-label {
+      font-weight: 700;
+      font-size: 15px
+    }
+
+    .day-date {
+      font-size: 12px;
+      color: var(--text3);
+      font-family: 'IBM Plex Mono', monospace
+    }
+
+    .day-count {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: var(--glass2);
+      color: var(--text3);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .slots-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px
+    }
+
+    .slot-btn {
+      padding: 9px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--rim2);
+      background: var(--ink3);
+      color: var(--text2);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .slot-btn:hover {
+      border-color: rgba(0, 255, 136, 0.4);
+      color: var(--vivid);
+      background: var(--vivid3);
+      transform: translateY(-2px)
+    }
+
+    .slot-btn.selected {
+      border-color: var(--vivid);
+      background: var(--vivid4);
+      color: var(--vivid);
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.2)
+    }
+
+    /* Booking form */
+    .booking-form {
+      background: var(--ink2);
+      border: 1px solid var(--rim);
+      border-radius: var(--r2);
+      padding: 24px;
+      margin-top: 20px;
+      animation: formSlide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes formSlide {
+      from {
+        opacity: 0;
+        transform: translateY(20px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .form-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 4px
+    }
+
+    .form-sub {
+      font-size: 13px;
+      color: var(--text2);
+      margin-bottom: 20px
+    }
+
+    .slot-preview {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--vivid3);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+    }
+
+    .slot-preview-icon {
+      font-size: 22px
+    }
+
+    .slot-preview-main {
+      font-weight: 700;
+      color: var(--vivid);
+      font-size: 15px
+    }
+
+    .slot-preview-sub {
+      font-size: 12px;
+      color: var(--text2);
+      margin-top: 2px
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px
+    }
+
+    .fg-full {
+      grid-column: 1/-1
+    }
+
+    .fg-label {
+      font-size: 11px;
+      color: var(--text3);
+      font-family: 'IBM Plex Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px
+    }
+
+    .fg-input {
+      width: 100%;
+      background: var(--ink3);
+      border: 1px solid var(--rim2);
+      border-radius: 10px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .fg-input:focus {
+      border-color: rgba(0, 255, 136, 0.4)
+    }
+
+    .fg-input::placeholder {
+      color: var(--text3)
+    }
+
+    .notif-note {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: rgba(79, 143, 255, 0.06);
+      border: 1px solid rgba(79, 143, 255, 0.2);
+      border-radius: 10px;
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--text2);
+    }
+
+    .confirm-btn {
+      width: 100%;
+      margin-top: 18px;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--vivid), var(--vivid2));
+      border: none;
+      border-radius: 12px;
+      color: #08090d;
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .confirm-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--glow)
+    }
+
+    .confirm-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none
+    }
+
+    /* ── CONFIRMATION SCREEN ─────────────────────── */
+    .confirm-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 20px 0
+    }
+
+    .confirm-anim {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      margin: 0 auto 24px;
+      background: rgba(0, 255, 136, 0.08);
+      border: 2px solid rgba(0, 255, 136, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      animation: confirmPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+      box-shadow: var(--glow);
+    }
+
+    @keyframes confirmPop {
+      from {
+        opacity: 0;
+        transform: scale(0.4)
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
+
+    .confirm-title {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px
+    }
+
+    .confirm-sub {
+      color: var(--text2);
+      font-size: 15px;
+      margin-bottom: 28px;
+      line-height: 1.6
+    }
+
+    .booking-card {
+      width: 100%;
+      background: var(--ink2);
+      border: 1px solid var(--rim);
+      border-radius: var(--r2);
+      padding: 24px;
+      text-align: left;
+      margin-bottom: 16px;
+    }
+
+    .booking-id-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    .bid {
+      background: var(--vivid3);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      color: var(--vivid);
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 12px;
+    }
+
+    .bdr {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--rim)
+    }
+
+    .bdr:last-child {
+      border-bottom: none
+    }
+
+    .bdr-l {
+      font-size: 12px;
+      color: var(--text3)
+    }
+
+    .bdr-r {
+      font-size: 13px;
+      font-weight: 600;
+      text-align: right
+    }
+
+    .bdr-r.green {
+      color: #22c55e
+    }
+
+    .bdr-r.vivid {
+      color: var(--vivid);
+      font-size: 18px;
+      font-weight: 800
+    }
+
+    .notif-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      margin-bottom: 20px
+    }
+
+    .notif-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--ink2);
+      border: 1px solid var(--rim);
+      border-radius: 12px;
+      padding: 14px 16px;
+      text-align: left;
+    }
+
+    .notif-icon {
+      font-size: 22px
+    }
+
+    .notif-info {
+      flex: 1
+    }
+
+    .notif-type {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 2px
+    }
+
+    .notif-addr {
+      font-size: 12px;
+      color: var(--text3);
+      font-family: 'IBM Plex Mono', monospace
+    }
+
+    .notif-sent {
+      font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      color: var(--vivid);
+      padding: 3px 10px;
+      border-radius: 99px;
+    }
+
+    .restart-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--rim2);
+      background: transparent;
+      color: var(--text2);
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .restart-btn:hover {
+      border-color: var(--vivid);
+      color: var(--vivid)
+    }
+
+    /* ── APPOINTMENTS SCREEN ─────────────────────── */
+    .appt-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      text-align: center;
+      gap: 14px;
+    }
+
+    .appt-empty-icon {
+      font-size: 48px;
+      opacity: 0.3
+    }
+
+    .appt-empty-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text2)
+    }
+
+    .appt-empty-sub {
+      font-size: 13px;
+      color: var(--text3)
+    }
+
+    .appt-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px
+    }
+
+    .appt-card {
+      background: var(--ink2);
+      border: 1px solid var(--rim);
+      border-radius: var(--r2);
+      padding: 18px 20px;
+      border-left: 3px solid var(--c, var(--vivid));
+      animation: msgIn 0.35s ease both;
+    }
+
+    .appt-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px
+    }
+
+    .appt-doc {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 2px
+    }
+
+    .appt-spec {
+      font-size: 11px;
+      color: var(--text3);
+      font-family: 'IBM Plex Mono', monospace
+    }
+
+    .appt-badge {
+      font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace;
+      padding: 4px 10px;
+      border-radius: 99px;
+    }
+
+    .appt-badge.confirmed {
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      color: var(--vivid)
+    }
+
+    .appt-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 12px
+    }
+
+    .appt-kv {
+      display: flex;
+      flex-direction: column;
+      gap: 2px
+    }
+
+    .appt-k {
+      color: var(--text3);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em
+    }
+
+    .appt-v {
+      color: var(--text);
+      font-weight: 500
+    }
+
+    .appt-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--rim);
+    }
+
+    .appt-id {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--text3)
+    }
+
+    .appt-fee {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--vivid)
+    }
+
+    /* ── TOAST ────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 999;
+      background: var(--ink3);
+      border: 1px solid var(--rim2);
+      border-radius: 14px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 340px;
+      box-shadow: var(--shadow);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      font-size: 14px;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1
+    }
+
+    .toast-icon {
+      font-size: 20px
+    }
+
+    /* ── MOBILE RESPONSIVE ────────────────────────── */
+    @media(max-width:768px) {
+      .app {
+        flex-direction: column
+      }
+
+      .left-rail {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--rim)
+      }
+
+      .convo-area {
+        max-height: 200px
+      }
+
+      .workspace {
+        flex: 1
+      }
+
+      .ws-body {
+        padding: 16px
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr
+      }
+
+      .doc-detail-hero {
+        flex-direction: column
+      }
+
+      .stats-row {
+        flex-direction: column
+      }
+
+      .stat-block:not(:last-child) {
+        border-right: none;
+        border-bottom: 1px solid var(--rim)
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- ════════════════════════════════
+       LEFT RAIL
+       ════════════════════════════════ -->
+    <aside class="left-rail">
+      <!-- Logo -->
+      <div class="logo-bar">
+        <div class="logo">
+          <div class="logo-mark">🩺</div>
+          <div class="logo-text">Medi<em>Agent</em></div>
+        </div>
+        <div class="status-dot">LIVE AI</div>
+      </div>
+
+      <!-- Nav -->
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('chat',this)">
+          <span class="tab-icon">💬</span>Chat
+        </button>
+        <button class="nav-tab" onclick="switchTab('appointments',this)">
+          <span class="tab-icon">📋</span>Bookings
+        </button>
+        <button class="nav-tab" onclick="switchTab('help',this)">
+          <span class="tab-icon">❓</span>Help
+        </button>
+      </div>
+
+      <!-- Chat tab -->
+      <div id="tab-chat" class="tab-content" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+        <div class="convo-area" id="convoArea"></div>
+
+        <!-- Quick chips -->
+        <div class="chips-row" id="chipsRow">
+          <div class="chip" onclick="chipClick('I have fever and body aches')">🌡️ Fever</div>
+          <div class="chip" onclick="chipClick('chest pain and breathlessness')">❤️ Chest Pain</div>
+          <div class="chip" onclick="chipClick('skin rash and itching all over body')">🦠 Skin Rash</div>
+          <div class="chip" onclick="chipClick('severe migraine headache with nausea')">🧠 Migraine</div>
+          <div class="chip" onclick="chipClick('knee joint pain and swelling')">🦴 Joint Pain</div>
+          <div class="chip" onclick="chipClick('anxiety depression and stress mental health')">🧘 Mental Health</div>
+          <div class="chip" onclick="chipClick('stomach pain bloating and acidity')">🫃 Stomach</div>
+          <div class="chip" onclick="chipClick('persistent cough and breathing difficulty')">🫁 Cough</div>
+        </div>
+
+        <!-- Input -->
+        <div class="input-bar">
+          <textarea class="chat-textarea" id="chatInput" placeholder="Describe your symptoms…" rows="1"
+            onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+        </div>
+      </div>
+
+      <!-- Appointments tab -->
+      <div id="tab-appointments" class="tab-content" style="display:none;flex:1;overflow-y:auto;padding:16px">
+        <div id="apptListInner"></div>
+      </div>
+
+      <!-- Help tab -->
+      <div id="tab-help" class="tab-content" style="display:none;flex:1;overflow-y:auto;padding:16px">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">How MediAgent Works</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.7">
+            <p style="margin-bottom:10px">1. <strong style="color:var(--text)">Describe symptoms</strong> in plain
+              language — the AI agent reads and reasons about your input.</p>
+            <p style="margin-bottom:10px">2. <strong style="color:var(--text)">Watch the AI think</strong> — see live
+              reasoning steps as the agent matches you to specialists.</p>
+            <p style="margin-bottom:10px">3. <strong style="color:var(--text)">Choose a doctor</strong> — browse
+              AI-ranked specialists with ratings, fees, and availability.</p>
+            <p style="margin-bottom:10px">4. <strong style="color:var(--text)">Pick a slot</strong> — see real-time
+              availability and book in one tap.</p>
+            <p>5. <strong style="color:var(--text)">Auto-confirmation</strong> — booking details sent instantly via
+              Email & WhatsApp.</p>
+          </div>
+          <div style="height:1px;background:var(--rim);margin:8px 0"></div>
+          <div style="font-size:12px;color:var(--text3);font-family:'IBM Plex Mono',monospace">Emergency? Call 108
+            immediately.</div>
+          <div style="font-size:12px;color:var(--text3);font-family:'IBM Plex Mono',monospace">Support:
+            help@mediagent.ai</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ════════════════════════════════
+       RIGHT WORKSPACE
+       ════════════════════════════════ -->
+    <main class="workspace">
+      <div class="ws-header">
+        <div class="ws-title" id="wsTitle">Overview</div>
+        <div class="ws-actions" id="wsActions"></div>
+      </div>
+      <div class="ws-body" id="wsBody">
+
+        <!-- SCREEN: HERO -->
+        <div class="screen active" id="screen-hero">
+          <div class="hero-screen">
+            <div class="hero-orbs">
+              <div class="orb orb1"></div>
+              <div class="orb orb2"></div>
+            </div>
+            <div class="hero-badge">⚡ Agentic AI — Reason · Plan · Act</div>
+            <h1 class="hero-title">
+              Your Personal<br /><span class="serif">Health Intelligence</span>
+            </h1>
+            <p class="hero-sub">Describe your symptoms. The AI agent reasons through your case, matches you with the
+              right specialist, and books your appointment — autonomously.</p>
+
+            <div class="stats-row">
+              <div class="stat-block">
+                <div class="stat-num">8</div>
+                <div class="stat-lbl">Specialists</div>
+              </div>
+              <div class="stat-block">
+                <div class="stat-num">97%</div>
+                <div class="stat-lbl">Match Accuracy</div>
+              </div>
+              <div class="stat-block">
+                <div class="stat-num">&lt;60s</div>
+                <div class="stat-lbl">To Book</div>
+              </div>
+              <div class="stat-block">
+                <div class="stat-num">24/7</div>
+                <div class="stat-lbl">AI Available</div>
+              </div>
+            </div>
+
+            <div class="arrow-hint">Type your symptoms in the chat panel →</div>
+          </div>
+        </div>
+
+        <!-- SCREEN: THINKING -->
+        <div class="screen" id="screen-thinking">
+          <div class="thinking-screen">
+            <div class="thinking-header">
+              <div class="agent-avatar-lg">🤖</div>
+              <div>
+                <div class="thinking-label">MEDIAGENT IS REASONING</div>
+                <div class="thinking-q" id="thinkingQ">Analyzing your symptoms…</div>
+              </div>
+            </div>
+            <div class="steps-list" id="stepsList"></div>
+            <div id="urgencyBar" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- SCREEN: DOCTORS -->
+        <div class="screen" id="screen-doctors">
+          <div id="doctorsContent"></div>
+        </div>
+
+        <!-- SCREEN: SLOTS -->
+        <div class="screen" id="screen-slots">
+          <div id="slotsContent"></div>
+        </div>
+
+        <!-- SCREEN: CONFIRM -->
+        <div class="screen" id="screen-confirm">
+          <div class="confirm-screen" id="confirmContent"></div>
+        </div>
+
+        <!-- SCREEN: APPOINTMENTS -->
+        <div class="screen" id="screen-appointments">
+          <div id="appointmentsContent"></div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <span class="toast-icon" id="toastIcon"></span>
+    <span id="toastText"></span>
+  </div>
+
+  <script>
+    /* ════════════════════════════════════════════════════
+       MEDIAGENT v2 — AGENTIC AI ENGINE
+       ════════════════════════════════════════════════════ */
+    const API = window.location.origin + '/.netlify/functions/api';
+
+    const S = {
+      symptoms: '',
+      sessionId: null,
+      analysis: null,
+      selectedDoc: null,
+      selectedSlot: null,
+      selectedDate: null,
+      selectedDateKey: null,
+      booking: null,
+      conversing: false,
+      currentScreen: 'hero'
+    };
+
+    // ── SCREEN MANAGEMENT ─────────────────────────
+    function showScreen(id, title = '', actions = '') {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-' + id).classList.add('active');
+      document.getElementById('wsTitle').textContent = title;
+      document.getElementById('wsActions').innerHTML = actions;
+      S.currentScreen = id;
+    }
+
+    // ── TAB SWITCHING ─────────────────────────────
+    function switchTab(tab, btn) {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+      document.getElementById('tab-' + tab).style.display = tab === 'chat' ? 'flex' : 'block';
+      document.getElementById('tab-' + tab).style.flexDirection = tab === 'chat' ? 'column' : '';
+
+      if (tab === 'appointments') {
+        renderAppointmentsList();
+        showScreen('appointments', 'My Bookings');
+      } else if (tab === 'chat') {
+        showScreen(S.currentScreen === 'appointments' ? 'hero' : S.currentScreen, '');
+      }
+    }
+
+    // ── CONVERSATION ENGINE ───────────────────────
+    function appendMsg(text, type = 'agent', isHTML = false) {
+      const area = document.getElementById('convoArea');
+      const wrap = document.createElement('div');
+      wrap.className = `msg msg-${type}`;
+
+      if (type === 'agent') {
+        wrap.innerHTML = `
+      <div class="msg-agent-label">
+        <div class="agent-avatar-sm">🤖</div>
+        <span>MediAgent</span>
+      </div>
+      <div class="msg-bubble">${isHTML ? text : esc(text)}</div>`;
+      } else {
+        wrap.innerHTML = `<div class="msg-bubble">${esc(text)}</div>`;
+      }
+
+      area.appendChild(wrap);
+      area.scrollTop = area.scrollHeight;
+      return wrap;
+    }
+
+    function showTyping() {
+      const area = document.getElementById('convoArea');
+      const wrap = document.createElement('div');
+      wrap.className = 'msg msg-agent';
+      wrap.id = 'typingIndicator';
+      wrap.innerHTML = `
+    <div class="msg-agent-label">
+      <div class="agent-avatar-sm">🤖</div><span>MediAgent</span>
+    </div>
+    <div class="typing-bubble">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>`;
+      area.appendChild(wrap);
+      area.scrollTop = area.scrollHeight;
+    }
+
+    function removeTyping() {
+      const t = document.getElementById('typingIndicator');
+      if (t) t.remove();
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const msg = input.value.trim();
+      if (!msg || S.conversing) return;
+
+      S.conversing = true;
+      document.getElementById('sendBtn').disabled = true;
+      input.value = '';
+      input.style.height = 'auto';
+
+      appendMsg(msg, 'user');
+      showTyping();
+
+      await sleep(700);
+      removeTyping();
+
+      // Route the message
+      const lower = msg.toLowerCase();
+      const isSymptom = lower.length > 8 && !lower.startsWith('book') && !lower.startsWith('cancel') && !lower.startsWith('help');
+
+      if (isSymptom && !lower.includes('appointment') && !lower.includes('bookings') && !lower.includes('list')) {
+        S.symptoms = msg;
+        appendMsg("Got it. Let me analyze your symptoms and find the right specialist for you — watch my reasoning in the panel.", 'agent');
+        await sleep(400);
+        await runSymptomAnalysis(msg);
+      } else {
+        // General chat
+        try {
+          const res = await fetch(`${API}/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg })
+          });
+          const data = await res.json();
+          appendMsg(data.reply || "I'm here to help! Describe your symptoms.", 'agent');
+        } catch {
+          appendMsg("Let me help you! Describe your symptoms and I'll find the right doctor.", 'agent');
+        }
+      }
+
+      S.conversing = false;
+      document.getElementById('sendBtn').disabled = false;
+    }
+
+    // ── AGENTIC SYMPTOM ANALYSIS ──────────────────
+    async function runSymptomAnalysis(symptoms) {
+      showScreen('thinking', 'AI Reasoning Engine', `<button class="ws-btn" onclick="showScreen('hero','Overview')">✕ Cancel</button>`);
+      document.getElementById('thinkingQ').textContent = `"${symptoms.substring(0, 60)}${symptoms.length > 60 ? '…' : ''}"`;
+
+      const steps = [
+        { title: 'Tokenizing symptom input', detail: 'Breaking down natural language into medical tokens…', delay: 0 },
+        { title: 'NLP pattern recognition', detail: 'Running symptom against 200+ medical keyword patterns…', delay: 700 },
+        { title: 'Specialty mapping', detail: 'Matching symptom clusters to medical specialties…', delay: 1400 },
+        { title: 'Doctor scoring algorithm', detail: 'Ranking specialists by relevance, rating and availability…', delay: 2100 },
+        { title: 'Urgency risk assessment', detail: 'Evaluating symptom severity and urgency level…', delay: 2800 },
+        { title: 'Generating recommendations', detail: 'Composing final ranked list with confidence scores…', delay: 3500 }
+      ];
+
+      const list = document.getElementById('stepsList');
+      list.innerHTML = '';
+
+      // Create step elements
+      steps.forEach((s, i) => {
+        const el = document.createElement('div');
+        el.className = 'step-item';
+        el.id = `step-${i}`;
+        el.innerHTML = `
+      <div class="step-num">${i + 1}</div>
+      <div class="step-body">
+        <div class="step-title">${s.title}</div>
+        <div class="step-detail" id="step-detail-${i}">${s.detail}</div>
+      </div>
+      <div class="step-status" id="step-status-${i}">⏸</div>`;
+        list.appendChild(el);
+      });
+
+      // API call in parallel with animations
+      const apiPromise = fetch(`${API}/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symptoms })
+      }).then(r => r.json());
+
+      // Animate steps
+      for (let i = 0; i < steps.length; i++) {
+        await sleep(i === 0 ? 0 : steps[i].delay - steps[i - 1].delay);
+        const el = document.getElementById(`step-${i}`);
+        el.classList.add('visible', 'running');
+        document.getElementById(`step-status-${i}`).innerHTML = '<span class="spinner">⟳</span>';
+
+        await sleep(500);
+
+        // Mark previous as done
+        if (i > 0) {
+          const prev = document.getElementById(`step-${i - 1}`);
+          prev.classList.remove('running');
+          prev.classList.add('done');
+          document.getElementById(`step-status-${i - 1}`).textContent = '✓';
+        }
+      }
+
+      // Wait for API
+      let data;
+      try {
+        data = await apiPromise;
+      } catch {
+        appendMsg("Sorry, I had trouble analyzing your symptoms. Please try again.", 'agent');
+        showScreen('hero', 'Overview');
+        return;
+      }
+
+      if (!data.success) {
+        appendMsg(data.error || "Analysis failed. Please try again.", 'agent');
+        showScreen('hero', 'Overview');
+        return;
+      }
+
+      // Mark last step done
+      const last = document.getElementById(`step-${steps.length - 1}`);
+      last.classList.remove('running');
+      last.classList.add('done');
+      document.getElementById(`step-status-${steps.length - 1}`).textContent = '✓';
+
+      S.sessionId = data.sessionId;
+      S.analysis = data.analysis;
+
+      // Show urgency bar
+      const urgency = data.analysis.urgencyLevel;
+      const urgencyBar = document.getElementById('urgencyBar');
+      urgencyBar.style.display = 'flex';
+      urgencyBar.className = `urgency-bar urgency-${urgency}`;
+      const urgencyMsg = { HIGH: '⚠️ High urgency — prioritizing earliest available slots', MEDIUM: '⚡ Moderate urgency — same-day appointments available', LOW: '✓ Routine consultation — flexible scheduling' };
+      urgencyBar.innerHTML = `<span>${urgencyMsg[urgency] || '✓ Analysis complete'}</span><strong>${urgency}</strong>`;
+
+      await sleep(600);
+
+      // Transition message
+      const docs = data.analysis.recommendedDoctors;
+      appendMsg(`Analysis complete! Confidence: ${data.analysis.confidence}%. I found ${docs.length} specialist${docs.length !== 1 ? 's' : ''} matched to your symptoms — see the panel →`, 'agent');
+
+      await sleep(300);
+      renderDoctors(data.analysis);
+    }
+
+    // ── DOCTORS SCREEN ────────────────────────────
+    function renderDoctors(analysis) {
+      const docs = analysis.recommendedDoctors;
+      const syms = analysis.detectedSymptoms;
+
+      document.getElementById('doctorsContent').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+      <div class="analysis-pill">
+        🎯 <span>${syms.length ? syms.slice(0, 3).join(' · ') : 'General assessment'}</span>
+        &nbsp;·&nbsp; Confidence: <span class="conf-val">${analysis.confidence}%</span>
+      </div>
+    </div>
+    <div class="section-title">AI-Matched Specialists (${docs.length} found)</div>
+    <div class="doctors-list" id="docsList"></div>`;
+
+      const list = document.getElementById('docsList');
+      docs.forEach((doc, i) => {
+        const el = document.createElement('div');
+        el.className = 'doc-card';
+        el.style.setProperty('--c', doc.color || '#00ff88');
+        el.style.animationDelay = `${i * 0.08}s`;
+        el.innerHTML = `
+      <div class="available-badge">● ${Object.values(doc.slots).flat().length} slots</div>
+      <div class="doc-card-top">
+        <div class="doc-avatar">${doc.image}</div>
+        <div class="doc-meta">
+          <div class="doc-name">${doc.name}</div>
+          <div class="doc-spec">${doc.specialty}</div>
+          <div class="doc-qual">${doc.qualification}</div>
+        </div>
+        <div class="doc-rating">
+          <div class="rating-num">★${doc.rating}</div>
+          <div class="rating-count">${doc.reviews} reviews</div>
+        </div>
+      </div>
+      <div class="doc-row2">
+        <div class="doc-chips">
+          <div class="doc-chip">${doc.experience}y exp</div>
+          ${doc.languages.map(l => `<div class="doc-chip">${l}</div>`).join('')}
+        </div>
+        <div class="doc-fee">₹${doc.fee.toLocaleString()} <span>/ consult</span></div>
+      </div>
+      <div class="doc-hospital">🏥 ${doc.hospital}</div>`;
+        el.onclick = () => selectDoctor(doc.id);
+        list.appendChild(el);
+      });
+
+      showScreen('doctors', 'Recommended Specialists',
+        `<button class="ws-btn" onclick="goToSymptoms()">← Symptoms</button>`);
+    }
+
+    function goToSymptoms() {
+      showScreen('hero', 'Overview');
+    }
+
+    // ── DOCTOR SELECTION & SLOTS ──────────────────
+    async function selectDoctor(docId) {
+      showLoading();
+      try {
+        const [docRes, slotsRes] = await Promise.all([
+          fetch(`${API}/doctors/${docId}`),
+          fetch(`${API}/doctors/${docId}/slots`)
+        ]);
+        const { doctor } = await docRes.json();
+        const { slots } = await slotsRes.json();
+        S.selectedDoc = doctor;
+        S.selectedSlot = null;
+        renderSlots(doctor, slots);
+      } catch {
+        toast('Failed to load doctor details', '❌');
+      }
+      hideLoading();
+    }
+
+    function renderSlots(doc, slots) {
+      document.getElementById('slotsContent').innerHTML = `
+    <div class="doc-detail-hero" style="--c:${doc.color}">
+      <div class="doc-detail-avatar">${doc.image}</div>
+      <div class="doc-detail-info">
+        <div class="doc-detail-name">${doc.name}</div>
+        <div class="doc-spec">${doc.specialty}</div>
+        <div class="doc-qual">${doc.qualification}</div>
+        <div class="doc-detail-tags">
+          <div class="dtag green">★ ${doc.rating} · ${doc.reviews} reviews</div>
+          <div class="dtag green">₹${doc.fee.toLocaleString()}</div>
+          ${doc.languages.map(l => `<div class="dtag">${l}</div>`).join('')}
+        </div>
+        <div class="doc-about">${doc.about}</div>
+      </div>
+    </div>
+
+    <div class="section-title">Available Time Slots</div>
+    ${slots.map((day, di) => `
+      <div class="slots-day-section">
+        <div class="day-header">
+          <div class="day-label">${day.label}</div>
+          <div class="day-date">${day.date}</div>
+          <div class="day-count">${day.slots.length} slots</div>
+        </div>
+        <div class="slots-grid">
+          ${day.slots.map(slot => `
+            <button class="slot-btn" id="slot_${di}_${slot.replace(/[: ]/g, '_')}"
+              onclick="selectSlot('${slot}','${day.date}','${day.dateKey}',this)">
+              ${slot}
+            </button>`).join('')}
+        </div>
+      </div>`).join('')}
+
+    <div id="bookingFormZone"></div>`;
+
+      showScreen('slots', doc.name,
+        `<button class="ws-btn" onclick="showScreen('doctors','Recommended Specialists')">← Doctors</button>`);
+
+      // Chat update
+      appendMsg(`Great choice! Dr. ${doc.name} is an excellent ${doc.specialty}. Select a time slot that works for you ↗`, 'agent');
+    }
+
+    function selectSlot(time, date, dateKey, btn) {
+      document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      S.selectedSlot = time;
+      S.selectedDate = date;
+      S.selectedDateKey = dateKey;
+      renderBookingForm();
+    }
+
+    function renderBookingForm() {
+      const doc = S.selectedDoc;
+      document.getElementById('bookingFormZone').innerHTML = `
+    <div class="booking-form">
+      <div class="form-title">Complete Your Booking</div>
+      <div class="form-sub">Enter your details to confirm the appointment</div>
+
+      <div class="slot-preview">
+        <div class="slot-preview-icon">📅</div>
+        <div>
+          <div class="slot-preview-main">${S.selectedDate} · ${S.selectedSlot}</div>
+          <div class="slot-preview-sub">Dr. ${doc.name} · ${doc.hospital}</div>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="fg-full">
+          <div class="fg-label">Full Name</div>
+          <input class="fg-input" id="fName" type="text" placeholder="Your full name"/>
+        </div>
+        <div>
+          <div class="fg-label">Phone Number</div>
+          <input class="fg-input" id="fPhone" type="tel" placeholder="+91 9876543210"/>
+        </div>
+        <div>
+          <div class="fg-label">Email Address</div>
+          <input class="fg-input" id="fEmail" type="email" placeholder="you@email.com"/>
+        </div>
+      </div>
+
+      <div class="notif-note">
+        📬 Booking confirmation will be automatically sent to your email and WhatsApp — no action needed.
+      </div>
+
+      <button class="confirm-btn" onclick="confirmBooking()">
+        ✓ &nbsp;Confirm Appointment · ₹${doc.fee.toLocaleString()}
+      </button>
+    </div>`;
+
+      document.getElementById('bookingFormZone').scrollIntoView({ behavior: 'smooth' });
+
+      // Chat update
+      appendMsg(`You've selected ${S.selectedDate} at ${S.selectedSlot}. Fill in your details to confirm. 👇`, 'agent');
+    }
+
+    // ── BOOKING CONFIRMATION ──────────────────────
+    async function confirmBooking() {
+      const name = document.getElementById('fName')?.value.trim();
+      const phone = document.getElementById('fPhone')?.value.trim();
+      const email = document.getElementById('fEmail')?.value.trim();
+
+      if (!name) { toast('Please enter your full name', '⚠️'); return; }
+      if (!phone || phone.length < 8) { toast('Please enter a valid phone number', '⚠️'); return; }
+      if (!email || !email.includes('@')) { toast('Please enter a valid email address', '⚠️'); return; }
+
+      const btn = document.querySelector('.confirm-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner">⟳</span> &nbsp;Booking…';
+
+      try {
+        const res = await fetch(`${API}/bookings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            doctorId: S.selectedDoc.id,
+            date: S.selectedDate,
+            time: S.selectedSlot,
+            dateKey: S.selectedDateKey,
+            patientName: name,
+            patientPhone: phone,
+            patientEmail: email,
+            symptoms: S.symptoms,
+            sessionId: S.sessionId
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Booking failed');
+
+        S.booking = data.booking;
+        renderConfirmation(data.booking, data.notifications);
+
+        // Chat update
+        appendMsg(`🎉 Booking confirmed! Your appointment with Dr. ${data.booking.doctorName} is set for ${data.booking.date} at ${data.booking.time}. Confirmation sent via email & WhatsApp!`, 'agent');
+
+      } catch (e) {
+        toast(e.message || 'Booking failed. Try again.', '❌');
+        btn.disabled = false;
+        btn.innerHTML = `✓ &nbsp;Confirm Appointment · ₹${S.selectedDoc.fee.toLocaleString()}`;
+      }
+    }
+
+    function renderConfirmation(booking, notif) {
+      document.getElementById('confirmContent').innerHTML = `
+    <div class="confirm-anim">🎉</div>
+    <h2 class="confirm-title">All Done!</h2>
+    <p class="confirm-sub">Your appointment is confirmed.<br/>Confirmation sent to your email & WhatsApp.</p>
+
+    <div class="booking-card">
+      <div class="booking-id-row">
+        Booking ID <div class="bid">#${booking.bookingId}</div>
+      </div>
+      <div class="bdr"><span class="bdr-l">Patient</span><span class="bdr-r">${booking.patientName}</span></div>
+      <div class="bdr"><span class="bdr-l">Doctor</span><span class="bdr-r">${booking.doctorName}</span></div>
+      <div class="bdr"><span class="bdr-l">Specialty</span><span class="bdr-r">${booking.specialty}</span></div>
+      <div class="bdr"><span class="bdr-l">Date & Time</span><span class="bdr-r">${booking.date} · ${booking.time}</span></div>
+      <div class="bdr"><span class="bdr-l">Hospital</span><span class="bdr-r">${booking.hospital}</span></div>
+      <div class="bdr"><span class="bdr-l">Status</span><span class="bdr-r green">● Confirmed</span></div>
+      <div class="bdr"><span class="bdr-l">Fee</span><span class="bdr-r vivid">₹${booking.fee.toLocaleString()}</span></div>
+    </div>
+
+    <div class="notif-cards">
+      <div class="notif-card">
+        <div class="notif-icon">📧</div>
+        <div class="notif-info">
+          <div class="notif-type">Email Confirmation</div>
+          <div class="notif-addr">${booking.patientEmail}</div>
+        </div>
+        <div class="notif-sent">${notif?.emailSent ? '✓ Sent' : 'Pending'}</div>
+      </div>
+      <div class="notif-card">
+        <div class="notif-icon">💬</div>
+        <div class="notif-info">
+          <div class="notif-type">WhatsApp Message</div>
+          <div class="notif-addr">${booking.patientPhone}</div>
+        </div>
+        <div class="notif-sent">${notif?.whatsappSent ? '✓ Sent' : 'Pending'}</div>
+      </div>
+    </div>
+
+    <div style="background:var(--ink2);border:1px solid var(--rim);border-radius:14px;padding:16px;width:100%;text-align:left;margin-bottom:20px">
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px">📋 Before You Arrive</div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:16px;line-height:2.2;font-family:'IBM Plex Mono',monospace">
+        <li>Arrive 10 minutes early</li>
+        <li>Bring previous reports & prescriptions</li>
+        <li>Carry a valid photo ID</li>
+        <li>Call hospital 24h before to reschedule</li>
+      </ul>
+    </div>
+
+    <button class="restart-btn" onclick="startFresh()">⟳ &nbsp;Book Another Appointment</button>`;
+
+      showScreen('confirm', 'Booking Confirmed ✓',
+        `<button class="ws-btn primary" onclick="switchTabDirect('appointments')">View All Bookings →</button>`);
+    }
+
+    // ── APPOINTMENTS LIST ─────────────────────────
+    function renderAppointmentsList() {
+      const inner = document.getElementById('apptListInner');
+      fetch(`${API}/bookings`)
+        .then(r => r.json())
+        .then(data => {
+          const bookings = data.bookings || [];
+          if (!bookings.length) {
+            inner.innerHTML = `
+          <div class="appt-empty">
+            <div class="appt-empty-icon">📋</div>
+            <div class="appt-empty-title">No appointments yet</div>
+            <div class="appt-empty-sub">Book your first appointment by describing your symptoms in the Chat tab.</div>
+          </div>`;
+            return;
+          }
+          inner.innerHTML = `
+        <div style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.08em">${bookings.length} Booking${bookings.length !== 1 ? 's' : ''}</div>
+        <div class="appt-list">
+          ${bookings.map(b => `
+            <div class="appt-card" style="--c:${b.color || '#00ff88'}">
+              <div class="appt-top">
+                <div>
+                  <div class="appt-doc">${b.doctorName}</div>
+                  <div class="appt-spec">${b.specialty}</div>
+                </div>
+                <div class="appt-badge confirmed">● ${b.status}</div>
+              </div>
+              <div class="appt-grid">
+                <div class="appt-kv"><div class="appt-k">Date</div><div class="appt-v">${b.date}</div></div>
+                <div class="appt-kv"><div class="appt-k">Time</div><div class="appt-v">${b.time}</div></div>
+                <div class="appt-kv"><div class="appt-k">Patient</div><div class="appt-v">${b.patientName}</div></div>
+                <div class="appt-kv"><div class="appt-k">Phone</div><div class="appt-v">${b.patientPhone}</div></div>
+              </div>
+              <div class="appt-footer">
+                <div class="appt-id">#${b.bookingId}</div>
+                <div class="appt-fee">₹${b.fee.toLocaleString()}</div>
+              </div>
+            </div>`).join('')}
+        </div>`;
+        })
+        .catch(() => {
+          inner.innerHTML = `<div class="appt-empty"><div class="appt-empty-icon">⚠️</div><div class="appt-empty-title">Couldn't load bookings</div></div>`;
+        });
+    }
+
+    function switchTabDirect(tab) {
+      const btn = document.querySelector('.nav-tab:nth-child(2)');
+      switchTab(tab, btn);
+    }
+
+    // Render appointments in workspace too
+    function renderAppointmentsScreen() {
+      const bDiv = document.getElementById('appointmentsContent');
+      fetch(`${API}/bookings`)
+        .then(r => r.json())
+        .then(data => {
+          const bookings = data.bookings || [];
+          if (!bookings.length) {
+            bDiv.innerHTML = `<div class="appt-empty"><div class="appt-empty-icon">📋</div><div class="appt-empty-title">No appointments yet</div><div class="appt-empty-sub">Book one from the Chat tab!</div></div>`;
+            return;
+          }
+          bDiv.innerHTML = `
+        <div class="section-title" style="margin-bottom:16px">${bookings.length} Appointment${bookings.length !== 1 ? 's' : ''}</div>
+        <div class="appt-list">
+          ${bookings.map(b => `
+            <div class="appt-card" style="--c:${b.color || '#00ff88'}">
+              <div class="appt-top">
+                <div>
+                  <div class="appt-doc">${b.doctorName}</div>
+                  <div class="appt-spec">${b.specialty} · ${b.hospital}</div>
+                </div>
+                <div class="appt-badge confirmed">● ${b.status}</div>
+              </div>
+              <div class="appt-grid">
+                <div class="appt-kv"><div class="appt-k">Date</div><div class="appt-v">${b.date}</div></div>
+                <div class="appt-kv"><div class="appt-k">Time</div><div class="appt-v">${b.time}</div></div>
+                <div class="appt-kv"><div class="appt-k">Patient</div><div class="appt-v">${b.patientName}</div></div>
+                <div class="appt-kv"><div class="appt-k">Fee</div><div class="appt-v" style="color:var(--vivid);font-weight:700">₹${b.fee.toLocaleString()}</div></div>
+              </div>
+              <div class="appt-footer">
+                <div class="appt-id">#${b.bookingId} · Booked ${new Date(b.createdAt).toLocaleDateString('en-IN')}</div>
+              </div>
+            </div>`).join('')}
+        </div>`;
+        });
+    }
+
+    // ── CHIP CLICK ────────────────────────────────
+    function chipClick(text) {
+      document.getElementById('chatInput').value = text;
+      document.getElementById('chipsRow').style.display = 'none';
+      sendMessage();
+    }
+
+    // ── KEYBOARD ──────────────────────────────────
+    function handleKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    }
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+    }
+
+    // ── UTILS ─────────────────────────────────────
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+    function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    let loadEl = null;
+    function showLoading() {
+      loadEl = document.createElement('div');
+      loadEl.style.cssText = 'position:fixed;inset:0;background:rgba(8,9,13,0.7);backdrop-filter:blur(8px);z-index:99;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px';
+      loadEl.innerHTML = `<div style="width:40px;height:40px;border:3px solid rgba(255,255,255,0.08);border-top:3px solid #00ff88;border-radius:50%;animation:spin 0.7s linear infinite"></div><div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#8b90a0">Loading…</div>`;
+      document.body.appendChild(loadEl);
+    }
+    function hideLoading() { if (loadEl) { loadEl.remove(); loadEl = null; } }
+
+    function toast(msg, icon = '✅') {
+      const t = document.getElementById('toast');
+      document.getElementById('toastText').textContent = msg;
+      document.getElementById('toastIcon').textContent = icon;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 4000);
+    }
+
+    function startFresh() {
+      S.symptoms = ''; S.sessionId = null; S.analysis = null;
+      S.selectedDoc = null; S.selectedSlot = null; S.booking = null;
+      document.getElementById('chipsRow').style.display = 'flex';
+      showScreen('hero', 'Overview');
+      appendMsg("Let's find you another doctor. What symptoms are you experiencing?", 'agent');
+    }
+
+    // ── BOOT ──────────────────────────────────────
+    (function boot() {
+      // Welcome message
+      setTimeout(() => {
+        appendMsg("Hello! I'm MediAgent, your AI health assistant. 👋", 'agent');
+      }, 300);
+      setTimeout(() => {
+        appendMsg("Describe your symptoms in plain language and I'll analyze them, reason through your case, and match you with the right specialist.", 'agent');
+      }, 1000);
+      setTimeout(() => {
+        appendMsg("You can also use the quick chips below ↓ to get started instantly.", 'agent');
+      }, 1800);
+    })();
+  </script>
+</body>
+
+</html>

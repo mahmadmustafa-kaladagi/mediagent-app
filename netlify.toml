@@ -1,0 +1,21 @@
+# netlify.toml — MediAgent Netlify Configuration
+
+[build]
+  publish   = "public"          # serve static frontend from /public
+  functions = "netlify/functions" # serverless functions from /netlify/functions
+
+[functions]
+  node_bundler = "esbuild"      # fast bundling, handles require() correctly
+
+# ── URL REWRITES ──────────────────────────────
+# Clean /api/* URLs → Netlify function (no /.netlify/functions/api in the browser)
+[[redirects]]
+  from   = "/api/*"
+  to     = "/.netlify/functions/api/:splat"
+  status = 200
+
+# SPA fallback — all unknown paths → index.html (keeps client routing working)
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
